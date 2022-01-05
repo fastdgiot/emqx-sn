@@ -1,5 +1,5 @@
 %%--------------------------------------------------------------------
-%% Copyright (c) 2020 EMQ Technologies Co., Ltd. All Rights Reserved.
+%% Copyright (c) 2020-2021 EMQ Technologies Co., Ltd. All Rights Reserved.
 %%
 %% Licensed under the Apache License, Version 2.0 (the "License");
 %% you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 -module(emqx_sn_proper_types).
 
--include("emqx_sn.hrl").
+-include_lib("emqx_sn/include/emqx_sn.hrl").
 -include_lib("proper/include/proper.hrl").
 
 -compile({no_auto_import, [register/1]}).

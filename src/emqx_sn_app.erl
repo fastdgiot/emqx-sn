@@ -1,5 +1,5 @@
 %%--------------------------------------------------------------------
-%% Copyright (c) 2020 EMQ Technologies Co., Ltd. All Rights Reserved.
+%% Copyright (c) 2020-2021 EMQ Technologies Co., Ltd. All Rights Reserved.
 %%
 %% Licensed under the Apache License, Version 2.0 (the "License");
 %% you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@
 start(_Type, _Args) ->
     Addr = application:get_env(emqx_sn, port, 1884),
     GwId = application:get_env(emqx_sn, gateway_id, 1),
-    {ok, Sup} = emqx_sn_sup:start_link(Addr, GwId),
+    PredefTopics = application:get_env(emqx_sn, predefined, []),
+    {ok, Sup} = emqx_sn_sup:start_link(Addr, GwId, PredefTopics),
     start_listeners(),
     {ok, Sup}.
 
@@ -57,13 +58,7 @@ stop(_State) ->
 
 -spec start_listeners() -> ok.
 start_listeners() ->
-    PredefTopics = application:get_env(emqx_sn, predefined, []),
-    ListenCfs = [begin
-                    TabName = tabname(Proto, ListenOn),
-                    {ok, RegistryPid} = emqx_sn_sup:start_registry_proc(emqx_sn_sup, TabName, PredefTopics),
-                    {Proto, ListenOn, [{registry, {TabName, RegistryPid}} | Options]}
-                 end || {Proto, ListenOn, Options} <- listeners_confs()],
-    lists:foreach(fun start_listener/1, ListenCfs).
+    lists:foreach(fun start_listener/1, listeners_confs()).
 
 -spec start_listener(listener()) -> ok.
 start_listener({Proto, ListenOn, Options}) ->
@@ -71,7 +66,7 @@ start_listener({Proto, ListenOn, Options}) ->
         {ok, _} -> io:format("Start mqttsn:~s listener on ~s successfully.~n",
                              [Proto, format(ListenOn)]);
         {error, Reason} ->
-            io:format(standard_error, "Failed to start mqttsn:~s listener on ~s - ~0p~n!",
+            io:format(standard_error, "Failed to start mqttsn:~s listener on ~s: ~0p~n",
                       [Proto, format(ListenOn), Reason]),
             error(Reason)
     end.
@@ -101,7 +96,7 @@ stop_listener({Proto, ListenOn, Opts}) ->
         ok -> io:format("Stop mqttsn:~s listener on ~s successfully.~n",
                         [Proto, format(ListenOn)]);
         {error, Reason} ->
-            io:format(standard_error, "Failed to stop mqttsn:~s listener on ~s - ~p~n.",
+            io:format(standard_error, "Failed to stop mqttsn:~s listener on ~s: ~0p~n",
                       [Proto, format(ListenOn), Reason])
     end,
     StopRet.
@@ -151,7 +146,3 @@ format({Addr, Port}) when is_list(Addr) ->
     io_lib:format("~s:~w", [Addr, Port]);
 format({Addr, Port}) when is_tuple(Addr) ->
     io_lib:format("~s:~w", [inet:ntoa(Addr), Port]).
-
-tabname(Proto, ListenOn) ->
-    list_to_atom(lists:flatten(["emqx_sn_registry__", atom_to_list(Proto), "_", format(ListenOn)])).
-
