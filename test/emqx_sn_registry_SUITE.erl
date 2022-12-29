@@ -1,5 +1,5 @@
 %%--------------------------------------------------------------------
-%% Copyright (c) 2020-2021 EMQ Technologies Co., Ltd. All Rights Reserved.
+%% Copyright (c) 2020-2022 EMQ Technologies Co., Ltd. All Rights Reserved.
 %%
 %% Licensed under the Apache License, Version 2.0 (the "License");
 %% you may not use this file except in compliance with the License.
@@ -107,6 +107,11 @@ t_register_case4(_Config) ->
 t_deny_wildcard_topic(_Config) ->
     ?assertEqual({error, wildcard_topic}, ?REGISTRY:register_topic(<<"ClientId">>, <<"/TopicA/#">>)),
     ?assertEqual({error, wildcard_topic}, ?REGISTRY:register_topic(<<"ClientId">>, <<"/+/TopicB">>)).
+
+t_gen_server(_) ->
+    ?assertEqual(ignored, gen_server:call(emqx_sn_registry, ignored)),
+    ?assertEqual(ok, gen_server:cast(emqx_sn_registry, ignored)),
+    ?assertEqual(ignored, erlang:send(emqx_sn_registry, ignored)).
 
 %%--------------------------------------------------------------------
 %% Helper funcs

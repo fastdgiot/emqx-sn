@@ -1,5 +1,5 @@
 %%--------------------------------------------------------------------
-%% Copyright (c) 2020-2021 EMQ Technologies Co., Ltd. All Rights Reserved.
+%% Copyright (c) 2020-2022 EMQ Technologies Co., Ltd. All Rights Reserved.
 %%
 %% Licensed under the Apache License, Version 2.0 (the "License");
 %% you may not use this file except in compliance with the License.
@@ -122,12 +122,14 @@ listeners_confs() ->
     EnableQos3 = application:get_env(emqx_sn, enable_qos3, false),
     EnableStats = application:get_env(emqx_sn, enable_stats, false),
     IdleTimeout = application:get_env(emqx_sn, idle_timeout, 30000),
+    SubsResume = application:get_env(emqx_sn, subs_resume, false),
     [{udp, ListenOn, [{gateway_id, GwId},
                       {username, Username},
                       {password, Password},
                       {enable_qos3, EnableQos3},
                       {enable_stats, EnableStats},
                       {idle_timeout, IdleTimeout},
+                      {subs_resume, SubsResume},
                       {max_connections, 1024000},
                       {max_conn_rate, 1000},
                       {udp_options, []}]}].
